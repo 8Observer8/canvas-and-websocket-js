@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Web Client</title>
+
+    <style>
+        #renderCanvas {
+            border: 1px solid rgb(159, 133, 230);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="renderCanvas" width="256" height="256"></canvas>
+
+    <script>
+        const ctx = document.getElementById("renderCanvas").getContext("2d");
+        let connectionMessage = "Waiting for connection...";
+        let outputMessage = "";
+
+        draw();
+
+        // const ws = new WebSocket("ws://localhost:3000");
+        const ws = new WebSocket("wss://canvas-and-websocket-js.herokuapp.com");
+
+        ws.onopen =
+            () =>
+            {
+                connectionMessage = "Connection was completed";
+
+                // Send a message to a server
+                ws.send(JSON.stringify({ msg: "Hello, server!" }));
+
+                draw();
+            };
+
+        ws.onmessage =
+            (event) =>
+            {
+                const message = JSON.parse(event.data);
+                console.log(message);
+
+                outputMessage = message.msg;
+                console.log(outputMessage);
+
+                draw();
+            };
+
+        function draw()
+        {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+            // White stone
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.ellipse(16, 16, 16, 16, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+
+            // Black stone
+            ctx.fillStyle = "#000000";
+            ctx.beginPath();
+            ctx.ellipse(16, 48, 16, 16, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+
+            // The game text
+            ctx.font = "14px Consolas";
+            ctx.fillText("The Game", 50, 50);
+
+            // Connection text
+            ctx.fillText(connectionMessage, 50, 100);
+
+            // Output text
+            ctx.fillText(outputMessage, 50, 150);
+
+            // Segment
+            ctx.beginPath();       // Start a new path
+            ctx.moveTo(32, 64);    // Move the pen to (30, 50)
+            ctx.lineTo(196, 64);   // Draw a line to (150, 100)
+            ctx.stroke();          // Render the path
+        }
+    </script>
+</body>
+
+</html>
